@@ -1,5 +1,5 @@
-use TD2::generate_seed
+use td2::generate_seed
 
-fn main() -> Result<(), getrandom::Error> {
-    TD2::generate_seed()
+fn main() -> Result<Vec<String>, getrandom::Error> {
+    td2::generate_seed()
 }

@@ -3,14 +3,6 @@
 version = 4
 
 [[package]]
-name = "TD2"
-version = "0.1.0"
-dependencies = [
- "getrandom",
- "sha2",
-]
-
-[[package]]
 name = "block-buffer"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -101,6 +93,14 @@ dependencies = [
  "cfg-if",
  "cpufeatures",
  "digest",
+]
+
+[[package]]
+name = "td2"
+version = "0.1.0"
+dependencies = [
+ "getrandom",
+ "sha2",
 ]
 
 [[package]]

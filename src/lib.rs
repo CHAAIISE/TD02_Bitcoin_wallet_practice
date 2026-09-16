@@ -1,6 +1,6 @@
 use sha2::{Digest, Sha256};
 
-pub fn generate_seed() -> Result<(), getrandom::Error> {
+pub fn generate_seed() -> Result<Vec<String>, getrandom::Error> {
     let entropy = get_random_u128()?;
     let bytes = u128_to_bytes(entropy);
     let binary = u128_to_binary(entropy);
@@ -28,7 +28,7 @@ pub fn generate_seed() -> Result<(), getrandom::Error> {
 
     println!("Voici la seed phrase : {}\n", mots.join(" "));
 
-    Ok(())
+    Ok(mots)
 }
 
 fn binary_to_u16(bin: &str) -> u16 {
@@ -57,3 +57,6 @@ fn get_random_u128() -> Result<u128, getrandom::Error> {
     Ok(u128::from_ne_bytes(buf))
 }
 
+pub fn master_private_key() {
+    
+}
