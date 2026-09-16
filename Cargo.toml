@@ -5,4 +5,8 @@ edition = "2024"
 
 [dependencies]
 getrandom = "0.4.3"
+hmac = "0.13"
+pbkdf2 = "0.13"
+secp256k1 = "0.33"
 sha2 = "0.11"
+unicode-normalization = "0.1"

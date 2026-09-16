@@ -1,4 +1,4 @@
-use td2::generate_seed;
+use td2::{generate_seed, master_private_key, public_key, child_key};
 use std::io::stdin;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -77,8 +77,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("                1 - Extract the master private key and the chain code\n
                 2 - Extract the master public key\n
                 3 - Generate a child key\n
-                4 - Generate a child key at index N : d \n
-                5 - Generate a child key at index N at derivation level M\n
+                4 - Generate a child key at index1 N : d \n
+                5 - Generate a child key at index1 N at derivation level M\n
                 6 - Quit bip32\n
                 Entrer votre choix : \n");
                 while q {
@@ -87,6 +87,111 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     if word2.trim() == "6" {
                         println!("cli -h for commands\n");
                         break;
+                    } else if word2.trim() == "1" {
+                        let (private_key, chain_code) = master_private_key(&seed, "")?;               
+                        print!("Master private key : ");
+                        for byte in &private_key {
+                            print!("{byte:02x}");
+                        }
+                        println!();
+                        print!("Chain Code : ");
+                        for byte in &chain_code {
+                            print!("{byte:02x}");
+                        }
+                        println!();
+                    } else if word2.trim() == "2" {
+                        let (private_key, _chain_code) = master_private_key(&seed, "")?;               
+                        let public_key = public_key(private_key)?;
+                        print!("Master public key : ");
+                        for byte in &public_key {
+                            print!("{byte:02x}");
+                        }
+                        println!();
+                    } else if word2.trim() == "3" {
+                        let (private_key, chain_code) = master_private_key(&seed, "")?;
+                        let (child_private_key, child_chain_code) = child_key(private_key, chain_code, 0u32.to_be_bytes())?;
+                        let child_public_key = public_key(child_private_key)?;
+                        print!("Child private key : ");
+                        for byte in &child_private_key {
+                            print!("{byte:02x}");
+                        }
+                        println!();
+                        print!("Child public key : ");
+                        for byte in &child_public_key {
+                            print!("{byte:02x}");
+                        }
+                        println!();
+                        print!("Child chain code : ");
+                        for byte in &child_chain_code {
+                            print!("{byte:02x}");
+                        }
+                        println!();
+                    } else if word2.trim() == "4" {
+                        println!("Entrée l'index souhaité : ");
+                        let mut saisie = String::new();
+                        stdin().read_line(&mut saisie)?;
+                        let n: u32 = saisie.trim().parse()?;
+                        if n >= (1u32 << 31) {
+                            println!("L’index doit être compris entre 0 et 2 147 483 647.");
+                            continue;
+                        }
+                        let index: [u8; 4] = n.to_be_bytes();
+                        let (private_key, chain_code) = master_private_key(&seed, "")?;
+                        let (child_private_key, child_chain_code) = child_key(private_key, chain_code, index)?;
+                        let child_public_key = public_key(child_private_key)?;
+                        print!("Child private key d'index {} : ", n);
+                        for byte in &child_private_key {
+                            print!("{byte:02x}");
+                        }
+                        println!();
+                        print!("Child public key d'index {} : ", n);
+                        for byte in &child_public_key {
+                            print!("{byte:02x}");
+                        }
+                        println!();
+                        print!("Child chain code d'index {} : ", n);
+                        for byte in &child_chain_code {
+                            print!("{byte:02x}");
+                        }
+                        println!();
+                    }  else if word2.trim() == "5" {
+                        println!("Entrer l'index souhaité : ");
+                        let mut saisie = String::new();
+                        stdin().read_line(&mut saisie)?;
+                        let n: u32 = saisie.trim().parse()?;
+                        if n >= (1u32 << 31) {
+                            println!("L’index doit être compris entre 0 et 2 147 483 647.");
+                            continue;
+                        }
+                        println!("Entrer la dérivation souhaité : ");
+                        let mut saisie2 = String::new();
+                        stdin().read_line(&mut saisie2)?;
+                        let m: u32 = saisie2.trim().parse()?;
+                        if m >= (1u32 << 31) {
+                            println!("La dérivation doit être compris entre 0 et 2 147 483 647.");
+                            continue;
+                        }
+                        let index1: [u8; 4] = n.to_be_bytes();
+                        let index2: [u8; 4] = m.to_be_bytes();
+                        let (private_key, chain_code) = master_private_key(&seed, "")?;
+                        let (child_private_key, child_chain_code) = child_key(private_key, chain_code, index1)?;
+                        let (child_private_key2, child_chain_code2) = child_key(child_private_key, child_chain_code, index2)?;
+                        let child_public_key2 = public_key(child_private_key2)?;
+                        print!("Child private key d'index {} et de dérivation {} : ", n, m);
+                        for byte in &child_private_key2 {
+                            print!("{byte:02x}");
+                        }
+                        println!();
+                        print!("Child public key d'index {} et de dérivation {} : ", n, m);
+                        for byte in &child_public_key2 {
+                            print!("{byte:02x}");
+                        }
+                        println!();
+                        print!("Child chain code d'index {} et de dérivation {} : ", n, m);
+                        for byte in &child_chain_code2 {
+                            print!("{byte:02x}");
+                        }
+                        println!();
                     } else {
                         println!("erreur\n");
                     }
