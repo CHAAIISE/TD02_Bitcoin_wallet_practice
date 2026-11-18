@@ -74,8 +74,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("                1 - Extract the master private key and the chain code\n
                 2 - Extract the master public key\n
                 3 - Generate a child key\n
-                4 - Generate a child key at index1 N : d \n
-                5 - Generate a child key at index1 N at derivation level M\n
+                4 - Generate a child key at index N\n
+                5 - Generate a child key at index N at derivation level M\n
                 6 - Quit bip32\n
                 Entrer votre choix : \n");
                 while q {
@@ -160,32 +160,43 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                             println!("L’index doit être compris entre 0 et 2 147 483 647.");
                             continue;
                         }
-                        println!("Entrer la dérivation souhaité : ");
+                        println!("Entrer le niveau de dérivation souhaité : ");
                         let mut saisie2 = String::new();
                         stdin().read_line(&mut saisie2)?;
-                        let m: u32 = saisie2.trim().parse()?;
-                        if m >= (1u32 << 31) {
-                            println!("La dérivation doit être compris entre 0 et 2 147 483 647.");
+                        let m: u32 = match saisie2.trim().parse() {
+                            Ok(m) => m,
+                            Err(_) => {
+                                println!("Le niveau doit être un nombre.");
+                                continue;
+                            }
+                        };
+                        if m == 0 || m > 255 {
+                            println!("Le niveau doit être compris entre 1 et 255.");
                             continue;
                         }
-                        let index1: [u8; 4] = n.to_be_bytes();
-                        let index2: [u8; 4] = m.to_be_bytes();
-                        let (private_key, chain_code) = master_private_key(&seed, "")?;
-                        let (child_private_key, child_chain_code) = child_key(private_key, chain_code, index1)?;
-                        let (child_private_key2, child_chain_code2) = child_key(child_private_key, child_chain_code, index2)?;
-                        let child_public_key2 = public_key(child_private_key2)?;
-                        print!("Child private key d'index {} et de dérivation {} : ", n, m);
-                        for byte in &child_private_key2 {
+                        let index: [u8; 4] = n.to_be_bytes();
+                        let (mut child_private_key, mut child_chain_code) = master_private_key(&seed, "")?;
+                        let mut chemin = String::from("m");
+                        for _ in 0..m {
+                            let (private_key, chain_code) = child_key(child_private_key, child_chain_code, index)?;
+                            child_private_key = private_key;
+                            child_chain_code = chain_code;
+                            chemin = format!("{chemin}/{n}");
+                        }
+                        let child_public_key = public_key(child_private_key)?;
+                        println!("Chemin : {chemin}");
+                        print!("Child private key d'index {} au niveau {} : ", n, m);
+                        for byte in &child_private_key {
                             print!("{byte:02x}");
                         }
                         println!();
-                        print!("Child public key d'index {} et de dérivation {} : ", n, m);
-                        for byte in &child_public_key2 {
+                        print!("Child public key d'index {} au niveau {} : ", n, m);
+                        for byte in &child_public_key {
                             print!("{byte:02x}");
                         }
                         println!();
-                        print!("Child chain code d'index {} et de dérivation {} : ", n, m);
-                        for byte in &child_chain_code2 {
+                        print!("Child chain code d'index {} au niveau {} : ", n, m);
+                        for byte in &child_chain_code {
                             print!("{byte:02x}");
                         }
                         println!();
