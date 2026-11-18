@@ -62,6 +62,49 @@ fn get_random_u128() -> Result<u128, getrandom::Error> {
     Ok(u128::from_ne_bytes(buf))
 }
 
+pub fn import_seed(mots: &[String]) -> bool {
+    let words: Vec<&str> = include_str!("../mots.txt").lines().collect();
+
+    if ![12, 15, 18, 21, 24].contains(&mots.len()) {
+        println!("Il faut 12, 15, 18, 21 ou 24 mots");
+        return false;
+    }
+
+    let mut binary = String::new();
+    for mot in mots {
+        match words.iter().position(|w| *w == mot.as_str()) {
+            Some(index) => binary.push_str(&format!("{index:011b}")),
+            None => {
+                println!("Le mot {mot} n'est pas dans la liste BIP 39");
+                return false;
+            }
+        }
+    }
+
+    let taille_checksum = binary.len() / 33;
+    let (entropie, checksum) = binary.split_at(binary.len() - taille_checksum);
+
+    let mut bytes: Vec<u8> = Vec::new();
+    for octet in entropie.as_bytes().chunks(8) {
+        let text = std::str::from_utf8(octet).expect("Erreur");
+        bytes.push(u8::from_str_radix(text, 2).expect("Binaire invalide"));
+    }
+
+    let hash = Sha256::digest(&bytes);
+    let hash_binary = format!("{:08b}", hash[0]);
+    let checksum_attendu = &hash_binary[..taille_checksum];
+
+    print!("Entropie : ");
+    for byte in &bytes {
+        print!("{byte:02x}");
+    }
+    println!();
+    println!("Checksum de la phrase : {checksum}");
+    println!("Checksum attendu : {checksum_attendu}");
+
+    checksum == checksum_attendu
+}
+
 pub fn master_private_key(mots: &[String], passphrase: &str) -> Result<([u8; 32], [u8; 32]), secp256k1::Error>{
     let phrase : String = mots.join(" ").nfkd().collect::<String>();
     let salt: String = format!("mnemonic{passphrase}").nfkd().collect();

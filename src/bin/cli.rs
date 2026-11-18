@@ -1,4 +1,4 @@
-use td2::{generate_seed, master_private_key, public_key, child_key};
+use td2::{generate_seed, import_seed, master_private_key, public_key, child_key};
 use std::io::stdin;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -6,7 +6,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut b : bool = false;
     let mut word : String = String::new();
     let q : bool = true;
-    let words: Vec<&str> = include_str!("../../mots.txt").lines().collect();
     println!("\n cli -h for commandes \n");
     while q { 
         let _test = std::io::stdin().read_line(&mut word);
@@ -48,14 +47,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 stdin().read_line(&mut phrase).expect("Erreur...");
                 let mots : Vec<String> = phrase.split_whitespace().map(String::from).collect();
                 println!("\nVoici la seed phrase : {}\n", mots.join(" "));
-                if mots.len() != 12 {
-                    println!("Seed invalide\n");
-                } else if !(mots.iter().all(|mot| words.contains(&mot.as_str()))) {
-                    println!("Seed invalide\n");
-                } else {
+                if import_seed(&mots) {
                     seed = mots.clone();
                     b = true;
                     println!("Seed valide\n");
+                } else {
+                    println!("Seed invalide\n");
                 }
             }
         } else if word.trim() == "cli -r" {
