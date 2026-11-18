@@ -8,7 +8,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let q : bool = true;
     println!("\n cli -h for commandes \n");
     while q { 
-        let _test = std::io::stdin().read_line(&mut word);
+        let test = std::io::stdin().read_line(&mut word)?;
+        if test == 0 {
+            break;
+        }
         if word.trim() == "cli -g" {
             if b {
                 println!("seed déjà enregistrée");
@@ -80,7 +83,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 Entrer votre choix : \n");
                 while q {
                     let mut word2 : String = String::new();
-                    let _test2 = std::io::stdin().read_line(&mut word2);
+                    let test2 = std::io::stdin().read_line(&mut word2)?;
+                    if test2 == 0 {
+                        break;
+                    }
                     if word2.trim() == "6" {
                         println!("cli -h for commands\n");
                         break;
@@ -127,7 +133,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         println!("Entrée l'index souhaité : ");
                         let mut saisie = String::new();
                         stdin().read_line(&mut saisie)?;
-                        let n: u32 = saisie.trim().parse()?;
+                        let n: u32 = match saisie.trim().parse() {
+                            Ok(n) => n,
+                            Err(_) => {
+                                println!("L'index doit être un nombre.");
+                                continue;
+                            }
+                        };
                         if n >= (1u32 << 31) {
                             println!("L’index doit être compris entre 0 et 2 147 483 647.");
                             continue;
@@ -155,7 +167,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         println!("Entrer l'index souhaité : ");
                         let mut saisie = String::new();
                         stdin().read_line(&mut saisie)?;
-                        let n: u32 = saisie.trim().parse()?;
+                        let n: u32 = match saisie.trim().parse() {
+                            Ok(n) => n,
+                            Err(_) => {
+                                println!("L'index doit être un nombre.");
+                                continue;
+                            }
+                        };
                         if n >= (1u32 << 31) {
                             println!("L’index doit être compris entre 0 et 2 147 483 647.");
                             continue;
